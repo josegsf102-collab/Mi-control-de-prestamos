@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#1255b8">
+  <title>Mi Control de Préstamos</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh;
+      display: grid; place-items: center;
+      padding: 20px; background: #edf3fc;
+      font-family: Arial, sans-serif; color: #17345d;
+    }
+    main {
+      width: 100%; max-width: 390px;
+      padding: 28px; background: white;
+      border-radius: 20px;
+      box-shadow: 0 8px 30px #12345d18;
+    }
+    h1 { color: #1255b8; font-size: 25px; }
+    p { color: #64748b; }
+    input, button {
+      width: 100%; padding: 14px; margin-top: 12px;
+      border-radius: 10px; font-size: 16px;
+    }
+    input { border: 1px solid #cbd5e1; }
+    button {
+      border: 0; color: white; background: #1255b8;
+      font-weight: bold;
+    }
+    #estado { overflow-wrap: anywhere; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Mi Control de Préstamos</h1>
+    <p>Ingresa con tu cuenta administradora.</p>
+    <form id="login">
+      <input id="correo" type="email" placeholder="Correo electrónico"
+        autocomplete="username" required>
+      <input id="clave" type="password" placeholder="Contraseña"
+        autocomplete="current-password" required>
+      <button type="submit">Iniciar sesión</button>
+    </form>
+    <button id="salir" hidden>Cerrar sesión</button>
+    <p id="estado">Preparando conexión...</p>
+  </main>
+
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "PEGA_AQUI_TU_API_KEY",
+      authDomain: "PEGA_AQUI_TU_AUTH_DOMAIN",
+      projectId: "PEGA_AQUI_TU_PROJECT_ID",
+      storageBucket: "PEGA_AQUI_TU_STORAGE_BUCKET",
+      messagingSenderId: "PEGA_AQUI_TU_SENDER_ID",
+      appId: "PEGA_AQUI_TU_APP_ID"
+    };
+
+    const estado = document.getElementById("estado");
+    const login = document.getElementById("login");
+    const salir = document.getElementById("salir");
+
+    try {
+      firebase.initializeApp(firebaseConfig);
+      const auth = firebase.auth();
+
+      login.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        estado.textContent = "Verificando acceso...";
+        try {
+          await auth.signInWithEmailAndPassword(
+            document.getElementById("correo").value.trim(),
+            document.getElementById("clave").value
+          );
+        } catch (error) {
+          estado.textContent = "No se pudo iniciar sesión. Verifica tus datos y la configuración de Firebase.";
+        }
+      });
+
+      auth.onAuthStateChanged((user) => {
+        login.hidden = !!user;
+        salir.hidden = !user;
+        estado.textContent = user
+          ? "Sesión iniciada: " + user.email
+          : "Ingresa con tu cuenta administradora.";
+      });
+
+      salir.addEventListener("click", () => auth.signOut());
+    } catch (error) {
+      estado.textContent = "Revisa la configuración de Firebase.";
+    }
+  </script>
+</body>
+</html>
